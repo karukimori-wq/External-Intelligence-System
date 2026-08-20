@@ -1,0 +1,3 @@
+export type EmbeddingProfile={id:string;provider:string;model:string;dimensions:number;active:boolean};
+export function assertEmbeddingCompatible(profile:EmbeddingProfile|undefined,embedding:number[]|undefined){if(!embedding)return;if(!profile)throw new Error('EMBEDDING_PROFILE_REQUIRED');if(!profile.active)throw new Error('EMBEDDING_PROFILE_INACTIVE');if(embedding.length!==profile.dimensions)throw new Error(`EMBEDDING_DIMENSION_MISMATCH:${embedding.length}:${profile.dimensions}`);if(embedding.some(x=>!Number.isFinite(x)))throw new Error('EMBEDDING_NON_FINITE');}
+export function vectorLiteral(embedding:number[]){if(embedding.some(x=>!Number.isFinite(x)))throw new Error('EMBEDDING_NON_FINITE');return`[${embedding.join(',')}]`;}
