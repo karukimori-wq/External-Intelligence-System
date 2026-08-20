@@ -8,5 +8,6 @@ export const McpTools={
  knowledge_explain:z.object({knowledgeId:z.uuid()}),
  promotion_candidates:z.object({workspaceId:z.string().min(1),limit:z.number().int().min(1).max(50).default(20)})
 };
+export const MCP_TOOLS=Object.keys(McpTools).map(name=>({name,description:`External Intelligence tool: ${name.replaceAll('_',' ')}`,inputSchema:{type:'object',additionalProperties:true}}));
 export type McpToolName=keyof typeof McpTools;
 export function validateMcpInput(name:McpToolName,input:unknown){return McpTools[name].parse(input);}
