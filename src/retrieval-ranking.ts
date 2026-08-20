@@ -1,0 +1,2 @@
+export type RetrievalSignals={textRank:number;confidence:number;projectsSeen:number;contradictions:number;stage:string;usefulnessScore?:number|null};
+export function retrievalScore(s:RetrievalSignals){const stageBonus=s.stage==='promoted'?.10:s.stage==='validated'?.06:0;const usefulness=s.usefulnessScore==null?0:Math.max(-1,Math.min(1,s.usefulnessScore))*.12;return Number((s.textRank*.40+s.confidence*.28+Math.min(s.projectsSeen,5)*.03+stageBonus+usefulness-Math.min(s.contradictions,5)*.05).toFixed(6));}
