@@ -1,0 +1,3 @@
+import{performance}from'node:perf_hooks';import type{RetrievalEvalDataset}from'./retrieval-eval-dataset.js';import type{EvalResult}from'./retrieval-eval.js';
+export type BenchmarkRetriever=(input:{workspaceId:string;query:string;limit:number})=>Promise<Array<{id:string}>>;
+export async function runRetrievalBenchmark(dataset:RetrievalEvalDataset,retrieve:BenchmarkRetriever,limit=5):Promise<EvalResult[]>{const results:EvalResult[]=[];for(const c of dataset.cases){const start=performance.now();const rows=await retrieve({workspaceId:c.workspaceId,query:c.query,limit});const latencyMs=performance.now()-start;results.push({caseId:c.id,returnedKnowledgeIds:rows.map(r=>r.id),latencyMs:Number(latencyMs.toFixed(3))});}return results;}
