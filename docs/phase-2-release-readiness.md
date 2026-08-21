@@ -1,5 +1,9 @@
 # Phase 2 Release Readiness
 
+## Status: RELEASED
+
+Phase 2 is formally released after the main-branch CI quality gate passed on CI #67 (commit `6218f459`). The successful run completed after the workflow was corrected to avoid lockfile-dependent setup/cache behavior in a repository that does not yet commit a package lock.
+
 ## Verified
 
 - durable Experience/Evidence/Verification learning loop
@@ -17,9 +21,14 @@
 - real Supabase pgvector E2E with strong semantic separation
 - real workspace isolation E2E, including an identical vector in a foreign workspace that was excluded
 - RLS enabled and direct anon/authenticated table privileges revoked for Phase 2 internal tables
+- main-branch CI quality gate passed: dependency install followed by `npm run check` (`tsc --noEmit` and complete Node test suite)
 
-## Final gate still required
+## CI configuration at release
 
-Phase 2 must not be marked released until the current main commit has a successful `npm run check` (`tsc --noEmit` plus the complete Node test suite). GitHub Actions is configured on pushes to main using Node 22, `npm ci`, minimal read permissions and a bounded timeout.
+- Node 22
+- `npm install --no-audit --no-fund`
+- `npm run check`
+- minimal `contents: read` permission
+- 10 minute timeout
 
-If CI reports a failure, fix the actual type/test regression and rerun before changing this document to released.
+Future work belongs to Phase 3 unless it is a regression against this released baseline.
