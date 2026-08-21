@@ -1,0 +1,26 @@
+{
+  "dataset": "phase-2-released-baseline@1",
+  "measurement": "initial-real-db-probe",
+  "lexical": {
+    "cases": 4,
+    "hitAt1": 0.5,
+    "hitAt3": 0.5,
+    "hitAt5": 0.5,
+    "meanReciprocalRank": 0.5,
+    "forbiddenExposureRate": 0
+  },
+  "vectorSubset": {
+    "cases": 2,
+    "hitAt1": 1,
+    "hitAt3": 1,
+    "hitAt5": 1,
+    "meanReciprocalRank": 1,
+    "forbiddenExposureRate": 0,
+    "notes": "Measured on hybrid_e2e cases with deterministic e2e-test-3d vectors. Semantic cache similarity 0.999948971676393; database retry similarity 0.999949002079169."
+  },
+  "limitations": [
+    "Only two benchmark cases currently have deterministic embeddings.",
+    "This result is not yet a full four-case hybrid score.",
+    "Latency was not captured in the direct SQL probe and must be measured by the application benchmark runner."
+  ]
+}
