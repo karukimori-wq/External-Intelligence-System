@@ -1,0 +1,38 @@
+{
+  "name": "phase-2-released-baseline",
+  "version": "1",
+  "cases": [
+    {
+      "id": "typecheck-before-tests",
+      "workspaceId": "e2e_ws",
+      "query": "typecheck before test execution structural failures",
+      "expectedKnowledgeIds": ["ac33b99d-9829-4379-99c5-0c7dd4f9e57f"],
+      "forbiddenKnowledgeIds": ["2837ca11-7030-46bd-a595-9a1152083eee"],
+      "tags": ["coding-loop", "verification", "promoted"]
+    },
+    {
+      "id": "nextjs-cache-pattern",
+      "workspaceId": "e2e_ws",
+      "query": "nextjs build cache failure after cache changes",
+      "expectedKnowledgeIds": ["3d2e9a2e-27d1-47fa-bdb5-35bdfbbbc655"],
+      "forbiddenKnowledgeIds": ["2837ca11-7030-46bd-a595-9a1152083eee"],
+      "tags": ["nextjs", "cache", "contradiction"]
+    },
+    {
+      "id": "semantic-cache-vector",
+      "workspaceId": "hybrid_e2e",
+      "query": "recover framework build after stale generated cache",
+      "expectedKnowledgeIds": ["2299b963-0762-4564-b4b2-68315b28da53"],
+      "forbiddenKnowledgeIds": ["2837ca11-7030-46bd-a595-9a1152083eee"],
+      "tags": ["hybrid", "vector", "workspace-isolation"]
+    },
+    {
+      "id": "database-retry",
+      "workspaceId": "hybrid_e2e",
+      "query": "transient database connection retry bounded backoff",
+      "expectedKnowledgeIds": ["67f679a1-3a73-4263-b878-e5653d3ac008"],
+      "forbiddenKnowledgeIds": ["2837ca11-7030-46bd-a595-9a1152083eee"],
+      "tags": ["database", "retry", "validated"]
+    }
+  ]
+}
