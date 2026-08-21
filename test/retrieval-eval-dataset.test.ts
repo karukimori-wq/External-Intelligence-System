@@ -1,0 +1,5 @@
+import test from'node:test';import assert from'node:assert/strict';import{RetrievalEvalDatasetSchema,datasetFingerprint}from'../src/retrieval-eval-dataset.js';
+const a='11111111-1111-4111-8111-111111111111',b='22222222-2222-4222-8222-222222222222';
+test('valid dataset has deterministic fingerprint',()=>{const d=RetrievalEvalDatasetSchema.parse({name:'baseline',version:'1',cases:[{id:'cache',workspaceId:'w',query:'cache failure',expectedKnowledgeIds:[a],tags:['build']}]});assert.equal(datasetFingerprint(d),datasetFingerprint(d));});
+test('expected knowledge cannot also be forbidden',()=>assert.throws(()=>RetrievalEvalDatasetSchema.parse({name:'x',version:'1',cases:[{id:'a',workspaceId:'w',query:'q',expectedKnowledgeIds:[a],forbiddenKnowledgeIds:[a]}]})));
+test('duplicate case ids are rejected',()=>assert.throws(()=>RetrievalEvalDatasetSchema.parse({name:'x',version:'1',cases:[{id:'a',workspaceId:'w',query:'q',expectedKnowledgeIds:[a]},{id:'a',workspaceId:'w',query:'q2',expectedKnowledgeIds:[b]}]})));
