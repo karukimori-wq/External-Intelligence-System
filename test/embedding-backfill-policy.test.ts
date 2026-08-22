@@ -1,0 +1,4 @@
+import test from'node:test';import assert from'node:assert/strict';import{validateBackfillPolicy}from'../src/embedding-backfill-policy.js';
+test('synthetic profile is forbidden for production backfill',()=>assert.throws(()=>validateBackfillPolicy({profileId:'e2e-test-3d',provider:'openai',model:'m',dimensions:1536,limit:10,allowObserved:false}),/SYNTHETIC/));
+test('observations are excluded by default',()=>{const p=validateBackfillPolicy({profileId:'prod-v1',provider:'openai',model:'m',dimensions:1536,limit:10,allowObserved:false});assert.deepEqual(p.stageAllowlist,['promoted','validated','candidate']);});
+test('unsafe dimensions are rejected',()=>assert.throws(()=>validateBackfillPolicy({profileId:'prod-v1',provider:'openai',model:'m',dimensions:3,limit:10,allowObserved:false}),/DIMENSIONS/));
