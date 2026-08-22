@@ -6,7 +6,12 @@ export const McpTools={
  verification_record:z.object({experienceId:z.uuid(),checkType:z.string().min(1),status:z.enum(['success','warning','error','skipped']),durationMs:z.number().int().nonnegative().optional()}),
  contradiction_record:z.object({knowledgeId:z.uuid(),evidenceId:z.uuid(),weight:z.number().positive().default(1)}),
  knowledge_explain:z.object({knowledgeId:z.uuid()}),
- promotion_candidates:z.object({workspaceId:z.string().min(1),limit:z.number().int().min(1).max(50).default(20)})
+ promotion_candidates:z.object({workspaceId:z.string().min(1),limit:z.number().int().min(1).max(50).default(20)}),
+ development_session_open:z.object({workspaceId:z.string().min(1),projectId:z.string().min(1),agentId:z.string().min(1),clientType:z.string().min(1),repository:z.string().min(1),branch:z.string().default('main'),baseCommit:z.string().optional(),currentTask:z.string().optional()}),
+ development_context_get:z.object({workspaceId:z.string().min(1),projectId:z.string().min(1),query:z.string().min(1),limit:z.number().int().min(1).max(20).default(8)}),
+ project_snapshot_get:z.object({workspaceId:z.string().min(1),projectId:z.string().min(1)}),
+ project_snapshot_publish:z.object({workspaceId:z.string().min(1),projectId:z.string().min(1),sessionId:z.uuid(),expectedVersion:z.number().int().positive().optional(),repository:z.string().min(1),branch:z.string().default('main'),currentTask:z.string().optional(),status:z.string().optional(),blocker:z.string().optional(),headCommit:z.string().optional(),lastVerifiedCommit:z.string().optional()}),
+ development_divergence_check:z.object({workspaceId:z.string().min(1),projectId:z.string().min(1),sessionId:z.uuid(),expectedCommit:z.string().optional(),actualCommit:z.string().optional()})
 };
 export const MCP_TOOLS=Object.keys(McpTools).map(name=>({name,description:`External Intelligence tool: ${name.replaceAll('_',' ')}`,inputSchema:{type:'object',additionalProperties:true}}));
 export type McpToolName=keyof typeof McpTools;
