@@ -1,0 +1,5 @@
+import type{EmbeddingProvider}from'./embedding-provider.js';import{validateEmbeddingResponse}from'./embedding-provider.js';import{canonicalKnowledgeEmbeddingText,type EmbeddableKnowledge}from'./knowledge-embedding-text.js';
+export type BackfillKnowledge=EmbeddableKnowledge&{id:string;confidence:number;embeddingProfileId?:string|null};
+const stagePriority:Record<string,number>={promoted:0,validated:1,candidate:2,observed:3};
+export function planEmbeddingBackfill(items:BackfillKnowledge[],profileId:string,limit=100){return items.filter(x=>x.stage!=='deprecated'&&x.embeddingProfileId!==profileId).sort((a,b)=>(stagePriority[a.stage]??9)-(stagePriority[b.stage]??9)||b.confidence-a.confidence||a.id.localeCompare(b.id)).slice(0,limit);}
+export async function generateBackfillVectors(items:BackfillKnowledge[],provider:EmbeddingProvider){const texts=items.map(canonicalKnowledgeEmbeddingText);const response=validateEmbeddingResponse(provider,await provider.embed({texts}),items.length);return items.map((item,i)=>({knowledgeId:item.id,vector:response.vectors[i],provider:response.provider,model:response.model,dimensions:response.dimensions,canonicalText:texts[i]}));}
