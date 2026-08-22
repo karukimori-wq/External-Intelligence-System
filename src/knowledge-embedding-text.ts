@@ -1,0 +1,3 @@
+export type EmbeddableKnowledge={title:string;statement:string;kind:string;stage:string;conditions?:Record<string,unknown>|null};
+function stable(value:unknown):string{if(value===null||typeof value!=='object')return JSON.stringify(value);if(Array.isArray(value))return`[${value.map(stable).join(',')}]`;return`{${Object.entries(value as Record<string,unknown>).sort(([a],[b])=>a.localeCompare(b)).map(([k,v])=>`${JSON.stringify(k)}:${stable(v)}`).join(',')}}`;}
+export function canonicalKnowledgeEmbeddingText(k:EmbeddableKnowledge){const conditions=k.conditions&&Object.keys(k.conditions).length?stable(k.conditions):'{}';return[`kind: ${k.kind}`,`stage: ${k.stage}`,`title: ${k.title.trim()}`,`statement: ${k.statement.trim()}`,`conditions: ${conditions}`].join('\n');}
