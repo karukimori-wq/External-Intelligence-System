@@ -16,3 +16,21 @@ jobs:
           node-version: 22
       - run: npm install --no-audit --no-fund
       - run: npm run check
+  retrieval-benchmark:
+    if: ${{ github.event_name == 'push' && secrets.DATABASE_URL != '' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install --no-audit --no-fund
+      - run: mkdir -p artifacts && npm run benchmark:retrieval -- evals/phase-2-baseline.json > artifacts/retrieval-benchmark.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: retrieval-benchmark
+          path: artifacts/retrieval-benchmark.json
+          retention-days: 14
