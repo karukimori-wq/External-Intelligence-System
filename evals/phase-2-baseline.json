@@ -1,6 +1,6 @@
 {
   "name": "phase-2-released-baseline",
-  "version": "1",
+  "version": "2",
   "cases": [
     {
       "id": "typecheck-before-tests",
@@ -22,6 +22,8 @@
       "id": "semantic-cache-vector",
       "workspaceId": "hybrid_e2e",
       "query": "recover framework build after stale generated cache",
+      "queryEmbedding": [0.99, 0.01, 0],
+      "embeddingProfileId": "e2e-test-3d",
       "expectedKnowledgeIds": ["2299b963-0762-4564-b4b2-68315b28da53"],
       "forbiddenKnowledgeIds": ["2837ca11-7030-46bd-a595-9a1152083eee"],
       "tags": ["hybrid", "vector", "workspace-isolation"]
@@ -30,6 +32,8 @@
       "id": "database-retry",
       "workspaceId": "hybrid_e2e",
       "query": "transient database connection retry bounded backoff",
+      "queryEmbedding": [0.01, 0.99, 0],
+      "embeddingProfileId": "e2e-test-3d",
       "expectedKnowledgeIds": ["67f679a1-3a73-4263-b878-e5653d3ac008"],
       "forbiddenKnowledgeIds": ["2837ca11-7030-46bd-a595-9a1152083eee"],
       "tags": ["database", "retry", "validated"]
