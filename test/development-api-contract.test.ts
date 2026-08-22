@@ -1,0 +1,3 @@
+import test from'node:test';import assert from'node:assert/strict';import{readFile}from'node:fs/promises';import{McpTools}from'../src/mcp-tools.js';
+test('development HTTP routes are registered',async()=>{const src=await readFile(new URL('../src/development-api.ts',import.meta.url),'utf8');for(const route of['/api/development/sessions','/api/development/context','/api/development/snapshot','/api/development/divergence'])assert.ok(src.includes(route));});
+test('development MCP tools are exposed',()=>{for(const name of['development_session_open','development_context_get','project_snapshot_get','project_snapshot_publish','development_divergence_check'])assert.ok(name in McpTools);});
