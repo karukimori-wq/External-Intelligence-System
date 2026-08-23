@@ -1,10 +1,13 @@
 name: CI
+
 on:
   push:
     branches: [main]
   pull_request:
+
 permissions:
   contents: read
+
 jobs:
   quality:
     runs-on: ubuntu-latest
@@ -16,8 +19,9 @@ jobs:
           node-version: 22
       - run: npm install --no-audit --no-fund
       - run: npm run check
+
   retrieval-benchmark:
-    if: ${{ github.event_name == 'push' && secrets.DATABASE_URL != '' }}
+    if: ${{ github.event_name == 'push' }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
@@ -27,9 +31,18 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: npm install --no-audit --no-fund
-      - run: mkdir -p artifacts && npm run benchmark:retrieval -- evals/phase-2-baseline.json > artifacts/retrieval-benchmark.json
-      - uses: actions/upload-artifact@v4
+      - name: Skip when benchmark database is not configured
+        if: ${{ env.DATABASE_URL == '' }}
+        run: echo "Retrieval benchmark skipped because DATABASE_URL is not configured."
+      - name: Install dependencies
+        if: ${{ env.DATABASE_URL != '' }}
+        run: npm install --no-audit --no-fund
+      - name: Run retrieval benchmark
+        if: ${{ env.DATABASE_URL != '' }}
+        run: mkdir -p artifacts && npm run benchmark:retrieval -- evals/phase-2-baseline.json > artifacts/retrieval-benchmark.json
+      - name: Upload retrieval benchmark
+        if: ${{ env.DATABASE_URL != '' }}
+        uses: actions/upload-artifact@v4
         with:
           name: retrieval-benchmark
           path: artifacts/retrieval-benchmark.json
