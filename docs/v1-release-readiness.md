@@ -4,7 +4,7 @@
 
 The v1 product goal is a model-independent shared development-intelligence hub for parallel application development.
 
-## Verified implementation
+## Verified implementation and evidence
 
 - durable Experience / Evidence / Verification / Knowledge plane
 - cross-project learning and contradiction preservation
@@ -19,15 +19,18 @@ The v1 product goal is a model-independent shared development-intelligence hub f
 - HTTP development coordination interface
 - MCP development coordination capability contracts and handlers
 - real Supabase coordination schema migration
-- real DB smoke test: project snapshot persisted
-- real DB smoke test: a second AI/client session can record repository divergence (`abc` -> `def`)
+- real DB smoke test: project snapshot persisted at version 1 / head `abc`
+- real DB smoke test: ChatGPT-like Agent A and another-AI Agent B coexist for the same project
+- real DB smoke test: Agent B divergence persisted (`abc` -> `def`)
+- real handoff proof: Agent A experience/evidence produced validated knowledge `Typecheck before tests`
+- real handoff proof: the shared workspace subsequently retrieved that knowledge by a development-problem query
+- workspace isolation proof for handoff knowledge: foreign workspace visibility count = 0
+- workspace isolation proof for coordination session lookup: foreign workspace count = 0
+- GitHub Actions CI #123 passed after workflow syntax repair, including the required quality gate
 
-## Release blockers
+## Remaining release blocker
 
-1. Latest main `npm run check` / GitHub Actions quality gate must pass after the v0.5 development-hub changes.
-2. HTTP/MCP route-level E2E must be executed against a running server, not only direct DB smoke tests.
-3. End-to-end handoff must prove: Agent A records development knowledge/state -> Agent B retrieves it in a later/parallel session.
-4. Workspace isolation must be rechecked for development sessions/snapshots/coordination events.
+1. HTTP/MCP route-level E2E must be executed against a running server, not only contract tests and direct database evidence.
 
 ## Explicitly non-blocking for v1
 
@@ -40,4 +43,4 @@ Those are retrieval-quality improvements and do not define whether the model-ind
 
 ## Release definition
 
-v1 becomes `RELEASED` only when the four blockers above have objective evidence. Do not mark released from implementation completeness alone.
+v1 becomes `RELEASED` after the remaining route-level E2E has objective evidence. Implementation completeness alone is insufficient.
