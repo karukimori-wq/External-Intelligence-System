@@ -20,6 +20,27 @@ jobs:
       - run: npm install --no-audit --no-fund
       - run: npm run check
 
+  database-e2e:
+    if: ${{ github.event_name == 'push' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Skip when database is not configured
+        if: ${{ env.DATABASE_URL == '' }}
+        run: echo "Database E2E skipped because DATABASE_URL is not configured."
+      - name: Install dependencies
+        if: ${{ env.DATABASE_URL != '' }}
+        run: npm install --no-audit --no-fund
+      - name: Run HTTP and MCP development hub E2E
+        if: ${{ env.DATABASE_URL != '' }}
+        run: node --import tsx --test test/development-route-e2e.test.ts
+
   retrieval-benchmark:
     if: ${{ github.event_name == 'push' }}
     runs-on: ubuntu-latest
