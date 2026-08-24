@@ -1,8 +1,8 @@
 # External Intelligence v1 Release Readiness
 
-## Status: RELEASE CANDIDATE
+## Status: RELEASED
 
-The v1 product goal is a model-independent shared development-intelligence hub for parallel application development.
+External Intelligence v1 is released as a model-independent shared development-intelligence hub for parallel application development.
 
 ## Verified implementation and evidence
 
@@ -26,21 +26,28 @@ The v1 product goal is a model-independent shared development-intelligence hub f
 - real handoff proof: the shared workspace subsequently retrieved that knowledge by a development-problem query
 - workspace isolation proof for handoff knowledge: foreign workspace visibility count = 0
 - workspace isolation proof for coordination session lookup: foreign workspace count = 0
-- GitHub Actions CI #123 passed after workflow syntax repair, including the required quality gate
+- GitHub Actions quality CI passed after workflow syntax repair
+- database-backed HTTP/MCP development-hub E2E was wired into main CI and the final verification CI completed green after `DATABASE_URL` was configured
 
-## Remaining release blocker
+## v1 release contract
 
-1. HTTP/MCP route-level E2E must be executed against a running server, not only contract tests and direct database evidence.
+A development client may:
 
-## Explicitly non-blocking for v1
+1. open a project development session;
+2. retrieve the latest project snapshot plus relevant durable intelligence;
+3. implement and verify work in its own chat/agent environment;
+4. detect repository divergence before publishing state;
+5. publish a version-checked project snapshot;
+6. record experience, evidence and verification;
+7. allow another concurrent or later AI client to retrieve and reuse the accumulated development intelligence.
 
-- production embedding provider
-- embedding coverage >= 80%
-- reranker adoption
-- graph projection
+The shared intelligence belongs to External Intelligence, not to a specific chat model or AI vendor.
 
-Those are retrieval-quality improvements and do not define whether the model-independent shared-development loop exists.
+## Post-v1 improvements (non-blocking)
 
-## Release definition
+- production embedding provider and broader embedding coverage
+- reranker evaluation when retrieval benchmarks justify it
+- graph projection where relationship traversal adds measurable value
+- richer agent authentication/authorization and operational dashboards
 
-v1 becomes `RELEASED` after the remaining route-level E2E has objective evidence. Implementation completeness alone is insufficient.
+These improve retrieval quality and operations without changing the v1 interoperability contract.
