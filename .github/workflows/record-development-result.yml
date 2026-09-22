@@ -1,0 +1,271 @@
+name: Record Development Result
+
+on:
+  workflow_call:
+    inputs:
+      eis_base_url:
+        description: External Intelligence base URL
+        required: true
+        type: string
+      workspace_id:
+        required: true
+        type: string
+      project_id:
+        required: true
+        type: string
+      app_id:
+        required: false
+        default: ''
+        type: string
+      component_id:
+        required: false
+        default: ''
+        type: string
+      task_type:
+        required: false
+        default: github-actions
+        type: string
+      summary:
+        required: true
+        type: string
+      outcome:
+        required: false
+        default: ''
+        type: string
+      success:
+        required: true
+        type: boolean
+      knowledge_title:
+        required: true
+        type: string
+      knowledge_statement:
+        required: true
+        type: string
+      production_deployed:
+        required: false
+        default: false
+        type: boolean
+      ui_reachable:
+        required: false
+        default: false
+        type: boolean
+      permission_verified:
+        required: false
+        default: false
+        type: boolean
+      requires_persistence:
+        required: false
+        default: false
+        type: boolean
+      persistence_verified:
+        required: false
+        default: false
+        type: boolean
+      requires_integration:
+        required: false
+        default: false
+        type: boolean
+      integration_verified:
+        required: false
+        default: false
+        type: boolean
+      human_verified:
+        required: false
+        default: false
+        type: boolean
+      runtime:
+        required: false
+        default: ''
+        type: string
+      framework:
+        required: false
+        default: ''
+        type: string
+      database:
+        required: false
+        default: ''
+        type: string
+      auth:
+        required: false
+        default: ''
+        type: string
+      billing:
+        required: false
+        default: ''
+        type: string
+      environment:
+        required: false
+        default: production
+        type: string
+      plan_model:
+        required: false
+        default: ''
+        type: string
+      app_role:
+        required: false
+        default: ''
+        type: string
+      contract_version:
+        required: false
+        default: ''
+        type: string
+      node_version:
+        required: false
+        default: ''
+        type: string
+      strict:
+        description: Fail the caller when EIS recording fails
+        required: false
+        default: false
+        type: boolean
+    secrets:
+      EXTERNAL_INTELLIGENCE_TOKEN:
+        required: true
+    outputs:
+      recorded:
+        description: Whether EIS accepted the development result
+        value: ${{ jobs.record.outputs.recorded }}
+
+permissions:
+  contents: read
+
+jobs:
+  record:
+    runs-on: ubuntu-latest
+    outputs:
+      recorded: ${{ steps.record.outputs.recorded }}
+    steps:
+      - name: Record verified development result in EIS
+        id: record
+        env:
+          EIS_BASE_URL: ${{ inputs.eis_base_url }}
+          EIS_TOKEN: ${{ secrets.EXTERNAL_INTELLIGENCE_TOKEN }}
+          WORKSPACE_ID: ${{ inputs.workspace_id }}
+          PROJECT_ID: ${{ inputs.project_id }}
+          APP_ID: ${{ inputs.app_id }}
+          COMPONENT_ID: ${{ inputs.component_id }}
+          TASK_TYPE: ${{ inputs.task_type }}
+          SUMMARY: ${{ inputs.summary }}
+          OUTCOME: ${{ inputs.outcome }}
+          SUCCESS: ${{ inputs.success }}
+          KNOWLEDGE_TITLE: ${{ inputs.knowledge_title }}
+          KNOWLEDGE_STATEMENT: ${{ inputs.knowledge_statement }}
+          PRODUCTION_DEPLOYED: ${{ inputs.production_deployed }}
+          UI_REACHABLE: ${{ inputs.ui_reachable }}
+          PERMISSION_VERIFIED: ${{ inputs.permission_verified }}
+          REQUIRES_PERSISTENCE: ${{ inputs.requires_persistence }}
+          PERSISTENCE_VERIFIED: ${{ inputs.persistence_verified }}
+          REQUIRES_INTEGRATION: ${{ inputs.requires_integration }}
+          INTEGRATION_VERIFIED: ${{ inputs.integration_verified }}
+          HUMAN_VERIFIED: ${{ inputs.human_verified }}
+          RUNTIME: ${{ inputs.runtime }}
+          FRAMEWORK: ${{ inputs.framework }}
+          DATABASE: ${{ inputs.database }}
+          AUTH: ${{ inputs.auth }}
+          BILLING: ${{ inputs.billing }}
+          ENVIRONMENT: ${{ inputs.environment }}
+          PLAN_MODEL: ${{ inputs.plan_model }}
+          APP_ROLE: ${{ inputs.app_role }}
+          CONTRACT_VERSION: ${{ inputs.contract_version }}
+          NODE_VERSION: ${{ inputs.node_version }}
+          STRICT: ${{ inputs.strict }}
+          SOURCE_REPOSITORY: ${{ github.repository }}
+          SOURCE_COMMIT: ${{ github.sha }}
+          EVIDENCE_URI: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          payload="$({
+            jq -n \
+              --arg workspaceId "$WORKSPACE_ID" \
+              --arg projectId "$PROJECT_ID" \
+              --arg appId "$APP_ID" \
+              --arg componentId "$COMPONENT_ID" \
+              --arg repository "$SOURCE_REPOSITORY" \
+              --arg commitSha "$SOURCE_COMMIT" \
+              --arg taskType "$TASK_TYPE" \
+              --arg summary "$SUMMARY" \
+              --arg outcome "$OUTCOME" \
+              --arg knowledgeTitle "$KNOWLEDGE_TITLE" \
+              --arg knowledgeStatement "$KNOWLEDGE_STATEMENT" \
+              --arg evidenceUri "$EVIDENCE_URI" \
+              --arg runtime "$RUNTIME" \
+              --arg framework "$FRAMEWORK" \
+              --arg database "$DATABASE" \
+              --arg auth "$AUTH" \
+              --arg billing "$BILLING" \
+              --arg environment "$ENVIRONMENT" \
+              --arg planModel "$PLAN_MODEL" \
+              --arg appRole "$APP_ROLE" \
+              --arg contractVersion "$CONTRACT_VERSION" \
+              --arg nodeVersion "$NODE_VERSION" \
+              --argjson success "$SUCCESS" \
+              --argjson productionDeployed "$PRODUCTION_DEPLOYED" \
+              --argjson uiReachable "$UI_REACHABLE" \
+              --argjson permissionVerified "$PERMISSION_VERIFIED" \
+              --argjson requiresPersistence "$REQUIRES_PERSISTENCE" \
+              --argjson persistenceVerified "$PERSISTENCE_VERIFIED" \
+              --argjson requiresIntegration "$REQUIRES_INTEGRATION" \
+              --argjson integrationVerified "$INTEGRATION_VERIFIED" \
+              --argjson humanVerified "$HUMAN_VERIFIED" \
+              '{
+                workspaceId: $workspaceId,
+                projectId: $projectId,
+                repository: $repository,
+                commitSha: $commitSha,
+                taskType: $taskType,
+                summary: $summary,
+                outcome: $outcome,
+                success: $success,
+                source: "github_actions",
+                knowledgeTitle: $knowledgeTitle,
+                knowledgeStatement: $knowledgeStatement,
+                evidenceUri: $evidenceUri,
+                fingerprint: {
+                  runtime: $runtime,
+                  framework: $framework,
+                  database: $database,
+                  auth: $auth,
+                  billing: $billing,
+                  environment: $environment,
+                  planModel: $planModel,
+                  appRole: $appRole,
+                  contractVersion: $contractVersion,
+                  nodeVersion: $nodeVersion
+                },
+                verification: {
+                  productionDeployed: $productionDeployed,
+                  uiReachable: $uiReachable,
+                  permissionVerified: $permissionVerified,
+                  requiresPersistence: $requiresPersistence,
+                  persistenceVerified: $persistenceVerified,
+                  requiresIntegration: $requiresIntegration,
+                  integrationVerified: $integrationVerified,
+                  humanVerified: $humanVerified
+                }
+              }
+              + (if $appId == "" then {} else {appId: $appId} end)
+              + (if $componentId == "" then {} else {componentId: $componentId} end)'
+          })"
+
+          endpoint="${EIS_BASE_URL%/}/api/development/results"
+          http_code="$(curl --silent --show-error \
+            --output /tmp/eis-response.json \
+            --write-out '%{http_code}' \
+            --request POST "$endpoint" \
+            --header 'content-type: application/json' \
+            --header "authorization: Bearer $EIS_TOKEN" \
+            --data "$payload" || true)"
+
+          if [[ "$http_code" =~ ^2 ]]; then
+            echo 'recorded=true' >> "$GITHUB_OUTPUT"
+            echo 'External Intelligence: RECORDED'
+            cat /tmp/eis-response.json
+            exit 0
+          fi
+
+          echo 'recorded=false' >> "$GITHUB_OUTPUT"
+          echo "External Intelligence: NOT CONNECTED (HTTP $http_code)" >&2
+          if [[ -f /tmp/eis-response.json ]]; then cat /tmp/eis-response.json >&2; fi
+          if [[ "$STRICT" == 'true' ]]; then exit 1; fi
