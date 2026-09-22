@@ -5,10 +5,12 @@ on:
     inputs:
       eis_base_url:
         description: External Intelligence base URL
-        required: true
+        required: false
+        default: https://external-intelligence-system.vercel.app
         type: string
       workspace_id:
-        required: true
+        required: false
+        default: professional-platform-dev
         type: string
       project_id:
         required: true
@@ -120,7 +122,8 @@ on:
         type: boolean
     secrets:
       EXTERNAL_INTELLIGENCE_TOKEN:
-        required: true
+        description: Optional static-token fallback; GitHub OIDC is preferred
+        required: false
     outputs:
       recorded:
         description: Whether EIS accepted the development result
@@ -128,6 +131,7 @@ on:
 
 permissions:
   contents: read
+  id-token: write
 
 jobs:
   record:
@@ -139,7 +143,7 @@ jobs:
         id: record
         env:
           EIS_BASE_URL: ${{ inputs.eis_base_url }}
-          EIS_TOKEN: ${{ secrets.EXTERNAL_INTELLIGENCE_TOKEN }}
+          EIS_STATIC_TOKEN: ${{ secrets.EXTERNAL_INTELLIGENCE_TOKEN }}
           WORKSPACE_ID: ${{ inputs.workspace_id }}
           PROJECT_ID: ${{ inputs.project_id }}
           APP_ID: ${{ inputs.app_id }}
@@ -176,78 +180,98 @@ jobs:
         run: |
           set -euo pipefail
 
-          payload="$({
-            jq -n \
-              --arg workspaceId "$WORKSPACE_ID" \
-              --arg projectId "$PROJECT_ID" \
-              --arg appId "$APP_ID" \
-              --arg componentId "$COMPONENT_ID" \
-              --arg repository "$SOURCE_REPOSITORY" \
-              --arg commitSha "$SOURCE_COMMIT" \
-              --arg taskType "$TASK_TYPE" \
-              --arg summary "$SUMMARY" \
-              --arg outcome "$OUTCOME" \
-              --arg knowledgeTitle "$KNOWLEDGE_TITLE" \
-              --arg knowledgeStatement "$KNOWLEDGE_STATEMENT" \
-              --arg evidenceUri "$EVIDENCE_URI" \
-              --arg runtime "$RUNTIME" \
-              --arg framework "$FRAMEWORK" \
-              --arg database "$DATABASE" \
-              --arg auth "$AUTH" \
-              --arg billing "$BILLING" \
-              --arg environment "$ENVIRONMENT" \
-              --arg planModel "$PLAN_MODEL" \
-              --arg appRole "$APP_ROLE" \
-              --arg contractVersion "$CONTRACT_VERSION" \
-              --arg nodeVersion "$NODE_VERSION" \
-              --argjson success "$SUCCESS" \
-              --argjson productionDeployed "$PRODUCTION_DEPLOYED" \
-              --argjson uiReachable "$UI_REACHABLE" \
-              --argjson permissionVerified "$PERMISSION_VERIFIED" \
-              --argjson requiresPersistence "$REQUIRES_PERSISTENCE" \
-              --argjson persistenceVerified "$PERSISTENCE_VERIFIED" \
-              --argjson requiresIntegration "$REQUIRES_INTEGRATION" \
-              --argjson integrationVerified "$INTEGRATION_VERIFIED" \
-              --argjson humanVerified "$HUMAN_VERIFIED" \
-              '{
-                workspaceId: $workspaceId,
-                projectId: $projectId,
-                repository: $repository,
-                commitSha: $commitSha,
-                taskType: $taskType,
-                summary: $summary,
-                outcome: $outcome,
-                success: $success,
-                source: "github_actions",
-                knowledgeTitle: $knowledgeTitle,
-                knowledgeStatement: $knowledgeStatement,
-                evidenceUri: $evidenceUri,
-                fingerprint: {
-                  runtime: $runtime,
-                  framework: $framework,
-                  database: $database,
-                  auth: $auth,
-                  billing: $billing,
-                  environment: $environment,
-                  planModel: $planModel,
-                  appRole: $appRole,
-                  contractVersion: $contractVersion,
-                  nodeVersion: $nodeVersion
-                },
-                verification: {
-                  productionDeployed: $productionDeployed,
-                  uiReachable: $uiReachable,
-                  permissionVerified: $permissionVerified,
-                  requiresPersistence: $requiresPersistence,
-                  persistenceVerified: $persistenceVerified,
-                  requiresIntegration: $requiresIntegration,
-                  integrationVerified: $integrationVerified,
-                  humanVerified: $humanVerified
-                }
+          auth_token="$EIS_STATIC_TOKEN"
+          auth_mode="static"
+          if [ -z "$auth_token" ]; then
+            auth_mode="github_oidc"
+            if [ -z "${ACTIONS_ID_TOKEN_REQUEST_URL:-}" ] || [ -z "${ACTIONS_ID_TOKEN_REQUEST_TOKEN:-}" ]; then
+              echo 'recorded=false' >> "$GITHUB_OUTPUT"
+              echo 'External Intelligence: NOT CONNECTED (GitHub OIDC unavailable)' >&2
+              if [ "$STRICT" = 'true' ]; then exit 1; fi
+              exit 0
+            fi
+            oidc_response="$(curl --fail --silent --show-error \
+              --header "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+              "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=https%3A%2F%2Fexternal-intelligence-system.vercel.app")"
+            auth_token="$(printf '%s' "$oidc_response" | jq -r '.value // empty')"
+            if [ -z "$auth_token" ]; then
+              echo 'recorded=false' >> "$GITHUB_OUTPUT"
+              echo 'External Intelligence: NOT CONNECTED (GitHub OIDC token missing)' >&2
+              if [ "$STRICT" = 'true' ]; then exit 1; fi
+              exit 0
+            fi
+          fi
+
+          payload="$(jq -n \
+            --arg workspaceId "$WORKSPACE_ID" \
+            --arg projectId "$PROJECT_ID" \
+            --arg appId "$APP_ID" \
+            --arg componentId "$COMPONENT_ID" \
+            --arg repository "$SOURCE_REPOSITORY" \
+            --arg commitSha "$SOURCE_COMMIT" \
+            --arg taskType "$TASK_TYPE" \
+            --arg summary "$SUMMARY" \
+            --arg outcome "$OUTCOME" \
+            --arg knowledgeTitle "$KNOWLEDGE_TITLE" \
+            --arg knowledgeStatement "$KNOWLEDGE_STATEMENT" \
+            --arg evidenceUri "$EVIDENCE_URI" \
+            --arg runtime "$RUNTIME" \
+            --arg framework "$FRAMEWORK" \
+            --arg database "$DATABASE" \
+            --arg auth "$AUTH" \
+            --arg billing "$BILLING" \
+            --arg environment "$ENVIRONMENT" \
+            --arg planModel "$PLAN_MODEL" \
+            --arg appRole "$APP_ROLE" \
+            --arg contractVersion "$CONTRACT_VERSION" \
+            --arg nodeVersion "$NODE_VERSION" \
+            --argjson success "$SUCCESS" \
+            --argjson productionDeployed "$PRODUCTION_DEPLOYED" \
+            --argjson uiReachable "$UI_REACHABLE" \
+            --argjson permissionVerified "$PERMISSION_VERIFIED" \
+            --argjson requiresPersistence "$REQUIRES_PERSISTENCE" \
+            --argjson persistenceVerified "$PERSISTENCE_VERIFIED" \
+            --argjson requiresIntegration "$REQUIRES_INTEGRATION" \
+            --argjson integrationVerified "$INTEGRATION_VERIFIED" \
+            --argjson humanVerified "$HUMAN_VERIFIED" \
+            '{
+              workspaceId: $workspaceId,
+              projectId: $projectId,
+              repository: $repository,
+              commitSha: $commitSha,
+              taskType: $taskType,
+              summary: $summary,
+              outcome: $outcome,
+              success: $success,
+              source: "github_actions",
+              knowledgeTitle: $knowledgeTitle,
+              knowledgeStatement: $knowledgeStatement,
+              evidenceUri: $evidenceUri,
+              fingerprint: {
+                runtime: $runtime,
+                framework: $framework,
+                database: $database,
+                auth: $auth,
+                billing: $billing,
+                environment: $environment,
+                planModel: $planModel,
+                appRole: $appRole,
+                contractVersion: $contractVersion,
+                nodeVersion: $nodeVersion
+              },
+              verification: {
+                productionDeployed: $productionDeployed,
+                uiReachable: $uiReachable,
+                permissionVerified: $permissionVerified,
+                requiresPersistence: $requiresPersistence,
+                persistenceVerified: $persistenceVerified,
+                requiresIntegration: $requiresIntegration,
+                integrationVerified: $integrationVerified,
+                humanVerified: $humanVerified
               }
-              + (if $appId == "" then {} else {appId: $appId} end)
-              + (if $componentId == "" then {} else {componentId: $componentId} end)'
-          })"
+            }
+            + (if $appId == "" then {} else {appId: $appId} end)
+            + (if $componentId == "" then {} else {componentId: $componentId} end)')"
 
           endpoint="${EIS_BASE_URL%/}/api/development/results"
           http_code="$(curl --silent --show-error \
@@ -255,17 +279,17 @@ jobs:
             --write-out '%{http_code}' \
             --request POST "$endpoint" \
             --header 'content-type: application/json' \
-            --header "authorization: Bearer $EIS_TOKEN" \
+            --header "authorization: Bearer $auth_token" \
             --data "$payload" || true)"
 
           if [[ "$http_code" =~ ^2 ]]; then
             echo 'recorded=true' >> "$GITHUB_OUTPUT"
-            echo 'External Intelligence: RECORDED'
+            echo "External Intelligence: RECORDED ($auth_mode)"
             cat /tmp/eis-response.json
             exit 0
           fi
 
           echo 'recorded=false' >> "$GITHUB_OUTPUT"
-          echo "External Intelligence: NOT CONNECTED (HTTP $http_code)" >&2
+          echo "External Intelligence: NOT CONNECTED ($auth_mode, HTTP $http_code)" >&2
           if [[ -f /tmp/eis-response.json ]]; then cat /tmp/eis-response.json >&2; fi
           if [[ "$STRICT" == 'true' ]]; then exit 1; fi
